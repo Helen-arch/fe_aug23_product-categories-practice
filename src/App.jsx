@@ -45,8 +45,12 @@ const getPreparedProducts = (
   }
 
   if (selectedCategories.length > 0) {
-    if (selectedCategories.includes('All')) {
-      resultData = [...products];
+    if (selectedCategories[selectedCategories.length - 1] === 'All') {
+      if (owner && owner === 'All') {
+        resultData = [...products];
+      } else {
+        resultData = [...resultData];
+      }
     } else {
       resultData = resultData
         .filter(({ category }) => selectedCategories.includes(category.title));
@@ -67,6 +71,21 @@ export const App = () => {
     query,
     filterByCategories,
   );
+
+  const handleSelect = (clickedTitle) => {
+    if (filterByCategories.includes(clickedTitle)) {
+      return [
+        'All',
+        ...filterByCategories
+          .filter(existed => existed !== clickedTitle),
+      ];
+    }
+
+    return [
+      ...filterByCategories.filter(existed => existed !== 'All'),
+      clickedTitle,
+    ];
+  };
 
   return (
     <div className="section">
@@ -132,7 +151,7 @@ export const App = () => {
             <div className="panel-block is-flex-wrap-wrap">
               <a
                 data-cy="AllCategories"
-                className={`button is-success mr-6 ${filterByCategories.includes('All') ? 'is-outlined' : ''}`}
+                className={`button is-success mr-6 ${filterByCategories.includes('All') ? '' : 'is-outlined'}`}
                 href="#/"
                 onClick={() => {
                   setFilterByCategories(['All']);
@@ -157,12 +176,7 @@ export const App = () => {
                     data-cy="Category"
                     className={`button mr-2 my-1 ${activeClass}`}
                     href="#/"
-                    onClick={() => {
-                      setFilterByCategories(
-                        [...(filterByCategories
-                          .filter(prev => prev !== 'All')), title],
-                      );
-                    }}
+                    onClick={() => setFilterByCategories(handleSelect(title))}
                   >
                     {title}
                   </a>
@@ -178,6 +192,7 @@ export const App = () => {
                 onClick={() => {
                   setFilterByOwner('All');
                   setQuery('');
+                  setFilterByCategories(['All']);
                 }}
               >
                 Reset all filters
